@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/leolucena22/todo-list-API/model"
 )
 
@@ -14,6 +15,28 @@ func NewTodolistRepository(connection *sql.DB) TodoListRepository {
 	return TodoListRepository{
 		connection: connection,
 	}
+}
+
+func (pr *TodoListRepository) CreateTask(task model.Task) (int, error) {
+	var id int
+	query, err := pr.connection.Prepare(`
+		INSERT INTO task (title, description) VALUES ($1, $2 RETURNING id)
+`)
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+
+	err = query.QueryRow(task.Title, task.Description).Scan(&id)
+
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+
+	query.Close()
+
+	return id, nil
 }
 
 func (pr *TodoListRepository) GetTasksByStatus(status string) ([]model.Task, error) {
@@ -109,7 +132,7 @@ func (pr *TodoListRepository) UpdateTask(id int, newTitle string, newDescription
 	query, err := pr.connection.Prepare(`UPDATE tasks SET title = $1, description = $2 WHERE id = $3
 		RETURNING id, title, description`)
 	if err != nil {
-		return nil, fmt.Errorf("Erro ao preparar query: %w", err)
+		return nil, fmt.Errorf("erro ao preparar query: %w", err)
 	}
 	defer query.Close()
 
