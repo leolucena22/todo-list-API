@@ -15,7 +15,7 @@ Um desafio completo para praticar Go, APIs RESTful e conceitos modernos de desen
 ### Estrutura:
 ```go
 type Task struct {
-    ID          string    `json:"id"`
+    ID          int    `json:"id"`
     Title       string    `json:"title"`
     Description string    `json:"description"`
     Status      string    `json:"status"` // "pending" ou "completed"
